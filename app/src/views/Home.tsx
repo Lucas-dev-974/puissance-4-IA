@@ -1,10 +1,40 @@
-import CardWrapper from "../components/card/CardWrapper"
+import { Show, createSignal } from "solid-js";
+import { Pages, changeView } from "../App";
+import CardWrapper from "../components/card/CardWrapper";
+import Button, { ButtonColor } from "../components/default-button/Button";
+import ButtonSelect, { SelectOptionProps } from "../components/select-button/ButtonSelect";
+
+export enum GameModes {
+    vsPayer = "vs-player",
+    vsIA = "vs-ia"
+}
+
+export const [gameMode, setGameMode] = createSignal<GameModes>()
+const IALevelOptions: SelectOptionProps[] = [
+    {
+        text: "Facile",
+        value: "easy"
+    },
+    {
+        text: "Median",
+        value: "altered"
+    },
+    {
+        text: "Dure",
+        value: "hard"
+    }
+]
 
 export default function () {
-    return <section class="flex flex-wrap w-full">
+    const [IALevelSelectRef, setIALevelSelectRef] = createSignal<HTMLSelectElement>()
 
-        <div class="w-full">
-            <CardWrapper class="w-[80%] mx-auto">
+    function onClickPlay(){
+        changeView(Pages.game)
+    }
+
+    return <section class="flex flex-wrap w-full">
+        <div class="w-[80%] mx-auto">
+            <CardWrapper class="">
                 <div>
                     <p><strong>Objectif :</strong> </p>
                      <p class="pl-5">
@@ -33,7 +63,38 @@ export default function () {
                     </p>
                 </div>
             </CardWrapper>
+
+            <div class="flex justify-between mt-5">
+                <div class="w-[49%]">
+                    <Button 
+                        text="Contre joueur" 
+                        onClick={() => {setGameMode(GameModes.vsPayer)}} 
+                        variant={ButtonColor.blue} 
+                        active={gameMode() === GameModes.vsPayer} />
+                </div>
+                <div class="w-[49%]">
+                    <Button 
+                        text="Contre joueur" 
+                        onClick={() => {setGameMode(GameModes.vsIA)}} 
+                        variant={ButtonColor.red} 
+                        active={gameMode() === GameModes.vsIA} />
+                </div>
+            </div>
+
+            <Show when={gameMode() == GameModes.vsIA}>
+                <ButtonSelect 
+                    defaultText="Choisisez le niveau de l'intelligence artificielle" 
+                    ref={setIALevelSelectRef} 
+                    options={IALevelOptions}   
+                />
+            </Show>
+
+            <Button 
+                text="Jouer" 
+                class="mt-3" 
+                variant={ButtonColor.blue} 
+                onClick={onClickPlay} 
+                active={false} />
         </div>
-        Home section
     </section>
 }
