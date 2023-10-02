@@ -3,5 +3,5 @@
 }
 
 .logo{
-    @apply text-2xl space-x-2;
+    @apply text-2xl space-x-2 cursor-pointer;
 }
