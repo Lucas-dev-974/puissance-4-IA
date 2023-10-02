@@ -1,27 +1,27 @@
-import type { Component } from 'solid-js';
+import { Match, Switch, createSignal, type Component } from 'solid-js';
+import Navbar from './components/navbar/Navbar';
+import Home from './views/Home';
 
-import logo from './logo.svg';
-import styles from './App.module.css';
+enum Pages {
+  home = "home",
+  game = "game"
+}
 
 const App: Component = () => {
-  return (
-    <div class={styles.App}>
-      <header class={styles.header}>
-        <img src={logo} class={styles.logo} alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          class={styles.link}
-          href="https://github.com/solidjs/solid"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn Solid
-        </a>
-      </header>
+  const [page, setOnPage] = createSignal<Pages>(Pages.home)
+
+  return <main id='main-app'>
+    <Navbar />
+    <div class="pt-10">
+      <Switch>
+        <Match when={page() == Pages.home}>
+          
+          <Home />
+        </Match>
+      </Switch>
     </div>
-  );
+
+  </main>
 };
 
 export default App;
