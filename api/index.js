@@ -9,7 +9,7 @@ dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.APP_PORT;
 app.get('/', (req, res) => {
-    res.send('Express + TypeScript Server');
+    res.send("l'application puissance 4 API est en cour de de construction");
 });
 app.listen(port, () => {
     console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
