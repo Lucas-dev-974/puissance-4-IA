@@ -1,0 +1,49 @@
+name: Node.js CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x] # Utilisez la version de Node.js appropriée pour votre application
+
+    steps:
+    - name: Checkout du code source
+      uses: actions/checkout@v2
+
+    - name: Configuration Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Installation des dépendances
+      run: |
+        cd api # Assurez-vous d'ajuster le chemin vers votre application
+        npm install
+
+    - name: Exécution des tests (si applicable)
+      run: |
+        cd api # Assurez-vous d'ajuster le chemin vers votre application
+        npm test # Remplacez par la commande de test de votre application
+
+    - name: Build de l'application
+      run: |
+        cd api # Assurez-vous d'ajuster le chemin vers votre application
+        npm run build # Remplacez par la commande de build de votre application
+
+    - name: Déploiement sur le serveur FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        local-dir: ./api/ # Assurez-vous que c'est le bon chemin pour vos fichiers construits
+        server:   ${{ secrets.FTP_SERVER_BACK }}
+        username: ${{ secrets.FTP_USERNAME_BACK }}
+        password: ${{ secrets.FTP_PASSWORD_BACK }}
+
+# Ajoutez d'autres étapes de déploiement si nécessaire, par exemple, un déploiement sur un serveur de production, des notifications, etc.
