@@ -1,5 +1,5 @@
 .btn{
-    @apply px-5 py-3 w-full;
+    @apply text-white px-5 py-3 w-full hover:shadow-xl   rounded-md;
 }
 
 .btn-blue{
@@ -8,4 +8,8 @@
 
 .btn-red{
     @apply bg-red-base;
+}
+
+.btn-active{
+    @apply shadow-2xl border-2 border-slate-900;
 }

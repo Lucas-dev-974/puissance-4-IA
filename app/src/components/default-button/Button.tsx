@@ -1,16 +1,30 @@
-enum ButtonColor {
+import "./Button.css";
+
+export enum ButtonColor {
     blue = "btn-blue",
     red = "btn-red"
 }
 
 interface ButtonProps {
     text: string;
-    onClick: () => {};
+    onClick: () => void;
     variant: ButtonColor;
+    class?: string;
+    active: boolean;
 }
 
 export default function (props: ButtonProps){
-    return <button class={"btn " + props.variant} onClick={props.onClick}>
+    function getClass(){
+        if(props.class) return props.class
+        else return ""
+    }
+
+    return <button
+            classList={{
+                " btn-active": props.active
+            }} 
+            class={"btn " + props.variant + " " + getClass()} 
+            onClick={props.onClick}>
         { props.text }
     </button>
 }
