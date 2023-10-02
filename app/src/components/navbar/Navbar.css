@@ -1,0 +1,7 @@
+.navbar{
+    @apply flex items-center justify-center w-full h-[75px] text-white bg-blue-base;
+}
+
+.logo{
+    @apply text-2xl space-x-2;
+}
