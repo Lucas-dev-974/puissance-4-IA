@@ -7,7 +7,7 @@ const app: Express = express();
 const port = process.env.APP_PORT;
 
 app.get('/', (req: Request, res: Response) => {
-  res.send("l'application puissance 4 API est en cour de de construction");
+  res.send("l'application puissance 4 API est en cour de de construction, teste 1");
 });
 
 app.listen(port, () => {
