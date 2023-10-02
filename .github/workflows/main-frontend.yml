@@ -32,7 +32,7 @@ jobs:
     - name: 📂 Sync files
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
-        local-dir: ./frontend/dist/
+        local-dir: ./app/dist/
         server:   ${{ secrets.FTP_SERVER_FRONT }}
         username: ${{ secrets.FTP_USERNAME_FRONT }}
         password: ${{ secrets.FTP_PASSWORD_FRONT }}
