@@ -1,7 +1,7 @@
 .game-board{
-    width: 50vh;
+    width: 100%;
     height: 50vh;
-    @apply bg-blue-800 mx-auto;
+    @apply bg-blue-800 mx-auto w-full;
 }
 
 
