@@ -1,0 +1,35 @@
+.game-board{
+    width: 50vh;
+    height: 50vh;
+    @apply bg-blue-800 mx-auto;
+}
+
+
+/* Style de la rangée (ligne) du plateau de jeu */
+.row {
+    @apply w-full flex justify-between items-center;
+  }
+  
+/* Style de chaque case du plateau de jeu */
+.square {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    background-color: #fff;
+    margin: 2px;
+}
+
+.red-square{
+  background-color: #e74c3c; /* Rouge */
+}
+
+.blue-square{
+  background-color: #3498db; /* Bleu */
+}
