@@ -1,6 +1,6 @@
 import { Match, Switch, createSignal, type Component } from 'solid-js';
 import Navbar from './components/navbar/Navbar';
-import Game from './views/Game';
+import Game, { gameIsLunch } from './views/Game';
 import Home from './views/Home';
 
 export enum Pages {
@@ -10,7 +10,12 @@ export enum Pages {
 
 const [page, setOnPage] = createSignal<Pages>(Pages.home)
 export function changeView(view: Pages){
-  setOnPage(view)
+  if(gameIsLunch()){
+    console.log("popup notification to get confirmation of close the window");
+    setOnPage(view)
+  }else{
+    setOnPage(view)
+  }
 }
 
 const App: Component = () => {
