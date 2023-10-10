@@ -1,47 +1,64 @@
-import { For, createSignal } from "solid-js";
+import { Accessor, For, Setter, createSignal } from "solid-js";
+import { socket } from "../../views/Game";
+import { PlayeNames, convertPlayerToFieldFill } from "../../views/Home";
 import "./GameBoard.css";
-import { diagCheck, fieldFill, horizontalCheck, lastPlayer, rowsCount, setLastPlayer, updateGrid, verticalCheck } from "./GameState";
+import { checkwin, fieldFill, rowsCount, setLastPlayer, updateGrid } from "./game.utils";
 
-type BoardType = { [key: number]: fieldFill[] }
+type GridType = { [key: number]: fieldFill[] }
 
-export const [turn, setTurn] = createSignal<fieldFill>(fieldFill.player1)
-export const [grid, setGrid] = createSignal< { [key: number]: string[] }>({})
-export const [winnerIs, setWinnerIs] = createSignal<fieldFill>(fieldFill.empty)
 
-export default function (){
-    const initialBoard: BoardType = {}
-    for (let row = 0; row <= rowsCount; row++) {
-        initialBoard[row] = [fieldFill.empty,fieldFill.empty,fieldFill.empty,fieldFill.empty,fieldFill.empty,fieldFill.empty,fieldFill.empty]
+export type GameState = {
+    player?: PlayeNames,
+    grid: Accessor<{ [key: number]: string[] }>, 
+    setGrid: Setter<{ [key: number]: string[] }>,
+    turn: Accessor<fieldFill>,
+    setTurn: Setter<fieldFill>,
+    winner: fieldFill,
+    lastPlayer: fieldFill,
+    started: boolean
+}
+
+
+function InitialiseGameState(): GameState{
+    const [turn, setTurn] = createSignal<fieldFill>(fieldFill.player1)
+    const [grid, setGrid] = createSignal< { [key: number]: string[] }>([])
+    
+    const initalGameState = {
+        grid: grid, 
+        setGrid: setGrid,
+        turn: turn,
+        setTurn: setTurn,
+        winner: fieldFill.empty,
+        lastPlayer: fieldFill.player1,
+        started: false
     }
     
-    setGrid(initialBoard)
-        
-    function checkwin(row: number, col: number){
-        let count: number;
-        count = horizontalCheck(row, col)
-        console.log("horinzontal count",count );
-        
-        count = count >= 4 ? count : verticalCheck(row, col)
-        count = count >= 4 ? count : diagCheck(row, col)
-        
-        if(count >= 4) {
-            setWinnerIs(lastPlayer)
-            return console.log("win of ", lastPlayer());
-        }
+    
+    const initialGrid: GridType = {}
+    for (let row = 0; row <= rowsCount; row++) {
+        initialGrid[row] = [fieldFill.empty,fieldFill.empty,fieldFill.empty,fieldFill.empty,fieldFill.empty,fieldFill.empty]
     }
+    initalGameState.setGrid(initialGrid)
+    initalGameState.setTurn(fieldFill.player1)
+    
+    return initalGameState
+}
 
-    function placeDisc(col: number){        
+export const [gameState, setGameState] = createSignal<GameState>(InitialiseGameState())
+export default function (){
+    function placeDisc(col: number){
+        socket.emit('play')
         let posed = false
-
-        if(winnerIs() != fieldFill.empty) return 
+        if(gameState().winner != fieldFill.empty) return 
         
-        for(const _row of Object.keys(grid()).reverse()){
+        if(convertPlayerToFieldFill(gameState().player as PlayeNames) != gameState().turn()) return console.log('not your tower')
+        for(const _row of Object.keys(gameState().grid()).reverse()){
             const row = Number(_row)
             
-            const position = grid()[row][col] 
+            const position =gameState().grid()[row][col] 
             if(!posed) {
                 if(position == "0"){
-                    setLastPlayer(turn() as fieldFill)
+                    setLastPlayer(gameState().turn() as fieldFill)
                     updateGrid(row, col)
                     checkwin(row, col)
                     posed = true    
@@ -50,16 +67,44 @@ export default function (){
         }
     }
     
-    return <div class="game-board"> 
-        <For each={Object.keys(grid())}>{(row) =>
-            <div class="row">
-                <For each={grid()[Number(row)]}>
-                    {(square, index) => <div class="square" classList={{
-                        "red-square": square == fieldFill.player1,
-                        "blue-square": square == fieldFill.player2 
-                    }} onClick={(event: Event) => placeDisc(index())} />}
-                </For>
-            </div>
-        }</For>
-    </div>
+    function getGridAsOneArray(){
+        const bufferGrid = []
+        
+        const rows = 7
+        const cols = 6
+
+        
+        for(let row = 0; row < rows; row++){
+            for(let _col = 0; _col <= cols; _col++){
+                if(!bufferGrid[_col]) bufferGrid[_col] = []
+                // ! warning ts-ignore
+                // @ts-ignore
+                bufferGrid[_col].push(gameState().grid()[row][_col])
+            }
+        }
+
+        let returnArray: string[] = []
+        
+        // ! remove undefined rows
+        for(const arr of bufferGrid){
+            if(arr[0] != undefined) returnArray = [...returnArray, ...arr]            
+        }
+
+        return returnArray
+    }
+    
+    return <>
+         <div class="game-board"> 
+            <For each={Object.keys(gameState().grid())}>{(row) =>
+                <div class="row">
+                    <For each={gameState().grid()[Number(row)]}>
+                        {(square, index) => <div class="square" classList={{
+                            "red-square": square == fieldFill.player1,
+                            "blue-square": square == fieldFill.player2 
+                        }} onClick={(event: Event) => placeDisc(index())} />}
+                    </For>
+                </div>
+            }</For>
+        </div>
+    </>
 }
