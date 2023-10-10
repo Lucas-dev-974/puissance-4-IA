@@ -1,15 +1,46 @@
+import { DefaultEventsMap } from "@socket.io/component-emitter";
+import { Socket, io } from "socket.io-client";
 import { Show, createSignal } from "solid-js";
 import { Pages, changeView } from "../App";
+import { fieldFill } from "../components/GameView/game.utils";
 import CardWrapper from "../components/card/CardWrapper";
 import Button, { ButtonColor } from "../components/default-button/Button";
 import ButtonSelect, { SelectOptionProps } from "../components/select-button/ButtonSelect";
+import { Room } from "./Game";
+
+let socket: Socket<DefaultEventsMap, DefaultEventsMap>;
+if(window && window.location.href.includes("localhost")){
+    socket = io("http://localhost:8000");
+}else socket = io("http://puissance-4-api.lelu0920.odns.fr/");
+
 
 export enum GameModes {
+    local = "local",
     vsPayer = "vs-player",
     vsIA = "vs-ia"
 }
 
+
+
+export enum PlayeNames {
+    player1 = "joueur 1",
+    player2 = "joueur 2",
+    ofPlayer = ""
+}
+export interface Player {
+    id: string;
+    name: PlayeNames;
+}
+
+export function convertPlayerToFieldFill(player: PlayeNames): fieldFill{
+    if(player == PlayeNames.player1) return fieldFill.player1
+    else if(player == PlayeNames.player2) return fieldFill.player2
+    else return fieldFill.empty
+}
+
+export const [playerInformations, setPlayerInformaitons] = createSignal<Player>()
 export const [gameMode, setGameMode] = createSignal<GameModes>()
+
 const IALevelOptions: SelectOptionProps[] = [
     {
         text: "Facile",
@@ -28,12 +59,22 @@ const IALevelOptions: SelectOptionProps[] = [
 export default function () {
     const [IALevelSelectRef, setIALevelSelectRef] = createSignal<HTMLSelectElement>()
 
-    function onClickPlay(){
-        changeView(Pages.game)
+    function getAvailableRoom(){
+        socket.emit('logRooms');
+        socket.on('logRooms', (room: Room) => {
+            console.log("availableRooms:", room);
+        });
     }
 
-    return <section class="flex flex-wrap w-full">
-        <div class="w-[80%] mx-auto">
+    function onClickPlay(){
+        if(gameMode()){
+            changeView(Pages.game)
+        }else console.log("select game mode: local versus, online versus, ia versus");
+        
+    }
+    
+    return <section class="w-full">
+            <button onClick={getAvailableRoom}>log room</button>
             <CardWrapper class="">
                 <div>
                     <p><strong>Objectif :</strong> </p>
@@ -63,7 +104,7 @@ export default function () {
                     </p>
                 </div>
             </CardWrapper>
-
+  
             <div class="flex justify-between mt-5">
                 <div class="w-[49%]">
                     <Button 
@@ -95,6 +136,5 @@ export default function () {
                 variant={ButtonColor.blue} 
                 onClick={onClickPlay} 
                 active={false} />
-        </div>
     </section>
 }

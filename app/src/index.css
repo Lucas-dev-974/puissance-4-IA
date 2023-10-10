@@ -19,3 +19,7 @@ code {
 #main-app{
   @apply  h-[100vh];
 }
+
+.container{
+  @apply w-[95%] sm:w-[80%] mx-auto;
+}

@@ -1,32 +1,53 @@
-import { Show, createSignal, onMount } from "solid-js";
-import GameBoard, { turn, winnerIs } from "../components/GameView/GameBoard";
-import { fieldFill } from "../components/GameView/GameState";
-
 import { DefaultEventsMap } from "@socket.io/component-emitter";
 import { Socket, io } from "socket.io-client";
 
-let socket: Socket<DefaultEventsMap, DefaultEventsMap>;
+import { Show, createSignal, onCleanup, onMount } from "solid-js";
+import GameBoard, { gameState } from "../components/GameView/GameBoard";
+import { fieldFill } from "../components/GameView/game.utils";
+import { getAvailableRoom, intialiseWebSocket, leaveRoomAndDisconnect } from "../services/web-socket.service";
+import { GameModes, Player, gameMode, playerInformations } from "./Home";
 
+let socketIO: Socket<DefaultEventsMap, DefaultEventsMap>;
 if(window && window.location.href.includes("localhost")){
-    socket = io("http://localhost:8000");
-}else socket = io("http://puissance-4-api.lelu0920.odns.fr/");
+    socketIO = io("http://localhost:8000");
+}else socketIO = io("http://puissance-4-api.lelu0920.odns.fr/");
 
+export const socket = socketIO
 export const [gameIsLunch, setGameIsLunch] = createSignal(true)
 
+intialiseWebSocket(socket)
+
+
+export interface Room {
+    name: string;
+    players: Player[];
+    gameBoard: number[][];
+    turnOf: 1 | 2;
+    started?: boolean,
+    winner?: null
+  }
+
+export function convertTurnOfNumberToField(turnOf: 1 | 2 | undefined | 0 | null): fieldFill{
+    if(turnOf == 1) return fieldFill.player1
+    else if(turnOf == 2) return fieldFill.player2
+    else return fieldFill.empty
+}
 export default function(){
     onMount(() => {
-        socket.on("connect", () => {
-            console.log(socket.id); // x8WIv7-mJelg7on_ALbx
-        });
+        if(gameMode() == GameModes.vsPayer) socket.emit('join-room')
+        // Écoutez l'événement 'beforeunload' pour déconnecter l'utilisateur lorsqu'il quitte la page
+        window.addEventListener('beforeunload', () => leaveRoomAndDisconnect(socket));
     })
 
-    return <section  class="flex flex-wrap w-full">
-        <div class="w-[50vw] mx-auto">
-            <Show when={winnerIs() != fieldFill.empty}>
-                <p>Le gagnant est {winnerIs().toString()} </p>
-            </Show>
-            <p>Tour de: {turn()}</p>
-            <GameBoard />
-        </div>
+    onCleanup(() => leaveRoomAndDisconnect(socket))
+
+    return <section>
+        <p>Vous ête le {playerInformations()?.name}</p>
+        <Show when={gameState().winner != fieldFill.empty}>
+            <p>Le gagnant est {gameState().winner.toString()} </p>
+        </Show>
+        <p>Tour de: {gameState().turn()}</p>
+        <GameBoard />
+        <button onClick={() => getAvailableRoom(socket)}>log room</button>
     </section>
 }

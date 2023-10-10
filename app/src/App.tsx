@@ -19,10 +19,9 @@ export function changeView(view: Pages){
 }
 
 const App: Component = () => {
-
   return <main id='main-app'>
     <Navbar />
-    <div class="pt-10">
+    <div class="pt-10 container">
       <Switch>
         <Match when={page() == Pages.home}>
           <Home />
@@ -32,7 +31,6 @@ const App: Component = () => {
         </Match>
       </Switch>
     </div>
-
   </main>
 };
 
