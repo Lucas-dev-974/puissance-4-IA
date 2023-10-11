@@ -47,8 +47,8 @@ const createRoom = () => {
     rooms[roomName] = {
         name: roomName,
         players: [],
-        gameBoard: Array(6).fill(Array(7).fill(0)),
-        turnOf: 1
+        grid: Array(6).fill(Array(7).fill(0)),
+        turnOf: Players.player1
     };
     return rooms[roomName];
 };
@@ -104,16 +104,23 @@ io.on("connection", (socket) => {
             socket.to(room.name).emit("notification", "le " + player.name + " à rejoin le jeux");
         }
     });
-    socket.on('play', () => {
+    socket.on('play', (grid) => {
         const roomName = Array.from(socket.rooms)[1];
         const room = rooms[roomName];
+        // * Get player by socket
+        const player = room.players.filter(player => player.id == socket.id)[0];
+        // * Check if room is not started if it is so start it  
         if (!room.started)
             room.started = true;
-        if (room.turnOf == 1)
-            room.turnOf = 2;
-        else
-            room.turnOf = 1;
-        console.log("play of");
+        console.log(player, room.turnOf == Players.player1 && player.name == Players.player1);
+        // * Check turn of
+        if (room.turnOf == Players.player1 && player.name == Players.player1)
+            room.turnOf = Players.player2;
+        else if (room.turnOf == Players.player2 && player.name == Players.player2)
+            room.turnOf = Players.player1;
+        // * set grid  of room
+        room.grid = grid;
+        // * Emit event played to players
         socket.to(roomName).emit('played', room);
         socket.emit('played', room);
     });
