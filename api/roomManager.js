@@ -62,12 +62,21 @@ class RoomManager {
         return room.players.find(item => item.id == socket.id);
     }
     formatRoom(room) {
+        const players = [];
+        room.players.map(player => {
+            players.push({
+                name: player.name,
+                pseudo: player.pseudo,
+                token: player.token
+            });
+        });
         return {
             grid: room.grid,
             lastPlayer: room.lastPlayer,
             turn: room.turn,
             started: room.started,
-            winner: room.winner
+            winner: room.winner,
+            players: players
         };
     }
     updateRoom(room) {

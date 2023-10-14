@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
-import { PlayerType, PlayersType, RoomType } from ".";
+import { PlayerType, PlayersType, RoomType, TokenType } from ".";
 
 class RoomManager {
     private static instance: RoomManager | null = null;
@@ -69,12 +69,27 @@ class RoomManager {
     }
 
     public formatRoom(room: RoomType): parsedRoom{
+        const players = [] as {
+            name: PlayersType;
+            pseudo: string;
+            token: TokenType
+        }[]
+        
+        room.players.map(player => {
+            players.push({
+                name: player.name,
+                pseudo: player.pseudo,
+                token: player.token
+            })
+        })
+
         return {
             grid: room.grid,
             lastPlayer: room.lastPlayer,
             turn: room.turn,
             started: room.started,
-            winner: room.winner
+            winner: room.winner,
+            players: players
         }
     }
 
@@ -85,7 +100,7 @@ class RoomManager {
     public getRooms(){
         return this.rooms
     }
-    
+
     public removePlayerFromRoom(roomName: string, socket: any){
         if (this.rooms[roomName]) {
             const room = this.rooms[roomName]
@@ -108,6 +123,11 @@ class RoomManager {
         }
       }
 }
-type parsedRoom =  Omit<RoomType, "players" | "name">
+type parsedRoom = {
+    players: {
+        name: PlayersType;
+        pseudo: string;
+    }[]
+} & Omit<RoomType, "players" | "name">
 
 export default RoomManager.getInstance()
