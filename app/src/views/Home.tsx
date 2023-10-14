@@ -2,7 +2,7 @@ import { DefaultEventsMap } from "@socket.io/component-emitter";
 import { Socket, io } from "socket.io-client";
 import { Show, createSignal } from "solid-js";
 import { Pages, changeView } from "../App";
-import { fieldFill } from "../components/GameView/game.utils";
+import { Token } from "../components/GameView/GameBoard";
 import CardWrapper from "../components/card/CardWrapper";
 import Button, { ButtonColor } from "../components/default-button/Button";
 import ButtonSelect, { SelectOptionProps } from "../components/select-button/ButtonSelect";
@@ -22,20 +22,15 @@ export enum GameModes {
 
 
 
-export enum PlayeNames {
-    player1 = "joueur 1",
-    player2 = "joueur 2",
-    ofPlayer = ""
+export enum PlayersType {
+    player1 = "1",
+    player2 = "2",
+    ofPlayer = "0"
 }
 export interface Player {
     id: string;
-    name: PlayeNames;
-}
-
-export function convertPlayerToFieldFill(player: PlayeNames): fieldFill{
-    if(player == PlayeNames.player1) return fieldFill.player1
-    else if(player == PlayeNames.player2) return fieldFill.player2
-    else return fieldFill.empty
+    name: PlayersType;
+    token: Token
 }
 
 export const [playerInformations, setPlayerInformaitons] = createSignal<Player>()

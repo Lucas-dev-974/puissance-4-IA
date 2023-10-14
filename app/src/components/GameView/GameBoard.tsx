@@ -1,71 +1,79 @@
-import { Accessor, For, Setter, createSignal } from "solid-js";
+import { For, createSignal } from "solid-js";
 import { socket } from "../../views/Game";
-import { PlayeNames, convertPlayerToFieldFill } from "../../views/Home";
+import { PlayersType, playerInformations } from "../../views/Home";
 import "./GameBoard.css";
-import { checkwin, fieldFill, rowsCount, setLastPlayer, updateGrid } from "./game.utils";
+import { checkwin, rowsCount, updateGrid } from "./game.utils";
 
-type GridType = { [key: number]: fieldFill[] }
+export type GridType = { [key: number]: string[] }
 
+export type Token = {
+    token: string
+}
 
+type gridType = { [key: number]: string[] }
 export type GameState = {
-    player?: PlayeNames,
-    grid: Accessor<{ [key: number]: string[] }>, 
-    setGrid: Setter<{ [key: number]: string[] }>,
-    turn: Accessor<fieldFill>,
-    setTurn: Setter<fieldFill>,
-    winner: fieldFill,
-    lastPlayer: fieldFill,
+    grid: gridType, 
+    player?: PlayersType,
+    turn: PlayersType,
+    winner: PlayersType,
+    lastPlayer: PlayersType,
     started: boolean
 }
 
 
 function InitialiseGameState(): GameState{
-    const [turn, setTurn] = createSignal<fieldFill>(fieldFill.player1)
-    const [grid, setGrid] = createSignal< { [key: number]: string[] }>([])
-    
-    const initalGameState = {
-        grid: grid, 
-        setGrid: setGrid,
-        turn: turn,
-        setTurn: setTurn,
-        winner: fieldFill.empty,
-        lastPlayer: fieldFill.player1,
-        started: false
-    }
-    
-    
     const initialGrid: GridType = {}
     for (let row = 0; row <= rowsCount; row++) {
-        initialGrid[row] = [fieldFill.empty,fieldFill.empty,fieldFill.empty,fieldFill.empty,fieldFill.empty,fieldFill.empty]
+        const playerOf = PlayersType.ofPlayer
+        initialGrid[row] = [playerOf,playerOf,playerOf,playerOf,playerOf,playerOf]
     }
-    initalGameState.setGrid(initialGrid)
-    initalGameState.setTurn(fieldFill.player1)
     
+
+    const initalGameState = {
+        grid: initialGrid,
+        turn: PlayersType.player1,
+        winner: PlayersType.ofPlayer,
+        lastPlayer: PlayersType.ofPlayer,
+        started: false
+    }
     return initalGameState
 }
 
 export const [gameState, setGameState] = createSignal<GameState>(InitialiseGameState())
-export default function (){
-    function placeDisc(col: number){
-        socket.emit('play')
-        let posed = false
-        if(gameState().winner != fieldFill.empty) return 
-        
-        if(convertPlayerToFieldFill(gameState().player as PlayeNames) != gameState().turn()) return console.log('not your tower')
-        for(const _row of Object.keys(gameState().grid()).reverse()){
-            const row = Number(_row)
-            
-            const position =gameState().grid()[row][col] 
-            if(!posed) {
-                if(position == "0"){
-                    setLastPlayer(gameState().turn() as fieldFill)
-                    updateGrid(row, col)
-                    checkwin(row, col)
-                    posed = true    
-                }
-            }
+
+
+export function placeDisc(col: number, byPassTurnOf = false, emit = true){
+    let posed = false
+    if(gameState().winner != PlayersType.ofPlayer) return 
+
+    const canIPlay = playerInformations()?.name == gameState().turn
+    console.log("Can I play: ", canIPlay, playerInformations());
+    
+    if(!canIPlay && !byPassTurnOf) return console.log('not your tower')
+    console.log("Check Turn Passed --");
+    
+    for(const _row of Object.keys(gameState().grid).reverse()){
+        const row = Number(_row)
+        const position = gameState().grid[row][col]
+        if(!posed && position == "0") {
+            updateGrid(row, col)
+            checkwin(row, col)
+            setDisplayGrid(prev => {
+                if(prev == undefined) return prev
+                const grid = {...prev}
+                grid[row][col] = gameState().lastPlayer
+                return  grid
+            })
+            posed = true   
         }
     }
+    if(emit) socket.emit('play', {col: col})
+}
+export const [dispalyGrid, setDisplayGrid] = createSignal<gridType>(gameState().grid)
+
+
+export default function (){ 
+
     
     function getGridAsOneArray(){
         const bufferGrid = []
@@ -79,7 +87,7 @@ export default function (){
                 if(!bufferGrid[_col]) bufferGrid[_col] = []
                 // ! warning ts-ignore
                 // @ts-ignore
-                bufferGrid[_col].push(gameState().grid()[row][_col])
+                bufferGrid[_col].push(gameState().grid[row][_col])
             }
         }
 
@@ -95,13 +103,13 @@ export default function (){
     
     return <>
          <div class="game-board"> 
-            <For each={Object.keys(gameState().grid())}>{(row) =>
+            <For each={Object.keys(dispalyGrid())}>{(row) =>
                 <div class="row">
-                    <For each={gameState().grid()[Number(row)]}>
+                    <For each={dispalyGrid()[Number(row)]}>
                         {(square, index) => <div class="square" classList={{
-                            "red-square": square == fieldFill.player1,
-                            "blue-square": square == fieldFill.player2 
-                        }} onClick={(event: Event) => placeDisc(index())} />}
+                            "red-square": square == PlayersType.player1.toString(),
+                            "blue-square": square == PlayersType.player2.toString() 
+                        }} onClick={() => placeDisc(index())} >{ square }</div>}
                     </For>
                 </div>
             }</For>

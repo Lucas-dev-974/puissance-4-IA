@@ -1,27 +1,36 @@
-import { createSignal } from "solid-js";
-import { gameState, setGameState } from "./GameBoard";
-
-export enum fieldFill {
-  empty = "0",
-  player1 = "1",
-  player2 = "2"
-}
+import { PlayersType } from "../../views/Home";
+import { gameState, setDisplayGrid, setGameState } from "./GameBoard";
 
 export const rowsCount = 6;
-export const [lastPlayer, setLastPlayer] = createSignal<fieldFill>(fieldFill.player1)
+
+function updateTurnOf(turn: PlayersType){
+  setGameState(prev => {
+    if(prev != undefined){
+      const state = prev
+      state.lastPlayer = state.turn
+      state.turn = turn
+      return state
+    }
+    return  prev
+  })
+}
 
 function turnOf(){
-  const _turn = gameState().turn()
-  if(gameState().turn() == fieldFill.player1) gameState().setTurn(fieldFill.player2)
-  else gameState().setTurn(fieldFill.player1)
-  return _turn
+  const _turn = gameState().turn
+  if(gameState().turn == PlayersType.player1)  updateTurnOf(PlayersType.player2)
+  else updateTurnOf(PlayersType.player1)
+  return _turn.toString()
 }
 
 function updateGrid(row: number, col: number){
-  gameState().setGrid((prev) => {
-      const newArray = {...prev};
-      newArray[row][col] = turnOf();
-      return newArray
+  setGameState(prev => {
+    if(prev == undefined) return prev 
+    prev.grid[row][col] = turnOf()
+    return prev
+  })
+  setDisplayGrid(prev => {
+    if(prev == undefined) return prev
+    return gameState().grid
   })
 }
 
@@ -31,7 +40,7 @@ function runLeftRight(row: number, col: number, count: number, left = true){
   if(left) bufferCol = col - 1
   else bufferCol = col + 1
   
-  while(gameState().grid()[row][bufferCol] == lastPlayer()){
+  while(gameState().grid[row][bufferCol] == gameState().lastPlayer.toString()){
       if(count >= 4) break
       count += 1
       if(left) bufferCol -=  1
@@ -58,11 +67,11 @@ function verticalCheck(row: number, col: number){
 function runVertical(row: number, col: number, count: number){
   let bufferRow: number = row
   
-  if(gameState().grid()[bufferRow] == undefined)
+  if(gameState().grid[bufferRow] == undefined)
     return 0
   
   
-  while(gameState().grid()[bufferRow] && gameState().grid()[bufferRow][col] == gameState().lastPlayer){
+  while(gameState().grid[bufferRow] && gameState().grid[bufferRow][col] == gameState().lastPlayer.toString()){
     if(count >= 4) break
     count += 1
     bufferRow +=  1
@@ -102,7 +111,7 @@ function runDiag(row: number, col: number, count: number, left = true, bottom = 
   if(bottom) bufferRow = row + 1
   else bufferRow = row - 1
   
-  while(gameState().grid()[bufferRow] && gameState().grid()[bufferRow][bufferCol] == gameState().lastPlayer){
+  while(gameState().grid[bufferRow] && gameState().grid[bufferRow][bufferCol] == gameState().lastPlayer.toString()){
       if(count >= 4) break
       
       if(left) bufferCol -=  1
@@ -123,19 +132,20 @@ export function checkwin(row: number, col: number){
   
   count = count >= 4 ? count : verticalCheck(row, col)
   count = count >= 4 ? count : diagCheck(row, col)
+  console.log("checkwin count:", count, gameState().grid);
   
   if(count >= 4) {
       setGameState((prev) => {
           if(prev != undefined){
               const state = {...prev}
-              state.winner = lastPlayer()
+              state.winner = gameState().lastPlayer
               return state
           }
           return prev
       })
       console.log("gameState Winner:", gameState());
       
-      return console.log("win of ", lastPlayer());
+      return console.log("win of ", gameState().lastPlayer);
   }
 }
 export { diagCheck, horizontalCheck, runLeftRight, turnOf, updateGrid, verticalCheck };

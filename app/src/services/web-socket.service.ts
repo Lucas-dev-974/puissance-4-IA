@@ -1,14 +1,14 @@
 import { DefaultEventsMap } from "@socket.io/component-emitter";
 import { Socket } from "socket.io-client";
-import { setGameState } from "../components/GameView/GameBoard";
-import { Room, convertTurnOfNumberToField } from "../views/Game";
+import { placeDisc, setGameState } from "../components/GameView/GameBoard";
+import { Room } from "../views/Game";
 import { Player, setPlayerInformaitons } from "../views/Home";
 
 export function intialiseWebSocket(socket: Socket<DefaultEventsMap, DefaultEventsMap>){
     socket.on('notification', (notif) => {
-        console.log(notif);
-        
+        console.log(notif);  
     })
+
     socket.on('playerJoinedRoom', (data: {room: Room, player: Player}) => {
         console.log("joined room", data.room);
         setPlayerInformaitons(data.player)
@@ -23,28 +23,17 @@ export function intialiseWebSocket(socket: Socket<DefaultEventsMap, DefaultEvent
     })
     
     socket.on('player-left', () => {
+        alert("player as leaved the game")
         console.log("player as leaved the game");
     })
     
     
-    socket.on('played', (room: Room) => {
-        console.log("played");
-        console.log(room);
-        
-        setGameState((prev) => {
-            if(prev != undefined){
-                const state = prev
-                state.setTurn(convertTurnOfNumberToField(room.turnOf))
-                return state
-            }
-
-            return prev
-        })
+    socket.on('played', (data:{col?: {col: number}, room: Room}) => {
+        if(data.col) placeDisc(data.col.col, true, false)
     })
     
     socket.on('exit-game', () => {
         console.log("game exited");
-        
         alert("désoler le joueur qui joue contre vous à quiter la partie !")
     })
 }

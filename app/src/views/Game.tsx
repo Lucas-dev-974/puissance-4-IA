@@ -3,9 +3,8 @@ import { Socket, io } from "socket.io-client";
 
 import { Show, createSignal, onCleanup, onMount } from "solid-js";
 import GameBoard, { gameState } from "../components/GameView/GameBoard";
-import { fieldFill } from "../components/GameView/game.utils";
 import { getAvailableRoom, intialiseWebSocket, leaveRoomAndDisconnect } from "../services/web-socket.service";
-import { GameModes, Player, gameMode, playerInformations } from "./Home";
+import { GameModes, PlayersType, gameMode, playerInformations } from "./Home";
 
 let socketIO: Socket<DefaultEventsMap, DefaultEventsMap>;
 if(window && window.location.href.includes("localhost")){
@@ -17,25 +16,18 @@ export const [gameIsLunch, setGameIsLunch] = createSignal(true)
 
 intialiseWebSocket(socket)
 
-
 export interface Room {
     name: string;
-    players: Player[];
-    gameBoard: number[][];
-    turnOf: 1 | 2;
-    started?: boolean,
-    winner?: null
+    started: boolean
+    turn: PlayersType;
+    winner: PlayersType
+    gameBoard: { [key: number]: string[] };
   }
 
-export function convertTurnOfNumberToField(turnOf: 1 | 2 | undefined | 0 | null): fieldFill{
-    if(turnOf == 1) return fieldFill.player1
-    else if(turnOf == 2) return fieldFill.player2
-    else return fieldFill.empty
-}
+
 export default function(){
     onMount(() => {
         if(gameMode() == GameModes.vsPayer) socket.emit('join-room')
-        // Écoutez l'événement 'beforeunload' pour déconnecter l'utilisateur lorsqu'il quitte la page
         window.addEventListener('beforeunload', () => leaveRoomAndDisconnect(socket));
     })
 
@@ -43,10 +35,10 @@ export default function(){
 
     return <section>
         <p>Vous ête le {playerInformations()?.name}</p>
-        <Show when={gameState().winner != fieldFill.empty}>
+        <Show when={gameState().winner != PlayersType.ofPlayer}>
             <p>Le gagnant est {gameState().winner.toString()} </p>
         </Show>
-        <p>Tour de: {gameState().turn()}</p>
+        <p>Tour de: {gameState().turn}</p>
         <GameBoard />
         <button onClick={() => getAvailableRoom(socket)}>log room</button>
     </section>
