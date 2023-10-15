@@ -35,9 +35,10 @@ class RoomManager {
         this.rooms[roomName] = {
           name: roomName,
           players: [this.createPlayer(socket)],
-          grid: Array(6).fill(Array(7).fill(0)),
+          grid: Array(6).fill(Array(7).fill("0")),
           turn: PlayersType.player1,
-          lastPlayer: PlayersType.player1
+          lastPlayer: PlayersType.player1,
+          winner: PlayersType.ofPlayer
         };
         socket.join(roomName)
         return this.rooms[roomName];
