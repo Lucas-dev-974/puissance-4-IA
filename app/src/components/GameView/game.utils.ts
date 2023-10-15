@@ -26,7 +26,7 @@ function updateGrid(row: number, col: number){
   setGameState(prev => {
     if(prev == undefined) return prev 
     const state = {...prev}
-    state.grid[row][col] = turnOf()
+    state.grid[row][col] = state.turn
     return state
   })
 }
@@ -36,6 +36,8 @@ function runLeftRight(row: number, col: number, count: number, left = true){
   
   if(left) bufferCol = col - 1
   else bufferCol = col + 1
+  
+  console.log("RUN LEFT RGHT:", left, gameState().lastPlayer, gameState().grid[row][bufferCol]);
   
   while(gameState().grid[row][bufferCol] == gameState().lastPlayer.toString()){
       if(count >= 4) break
@@ -48,8 +50,10 @@ function runLeftRight(row: number, col: number, count: number, left = true){
 }
 
 function horizontalCheck(row: number, col: number){
+  
   const leftCount = runLeftRight(row, col, 0)
   const rightCount = runLeftRight(row, col, 0, false)
+  console.log("horizontalCheck left:", leftCount);
 
   const leftRightCount = leftCount + rightCount + 1  
   return leftRightCount
@@ -129,6 +133,8 @@ export function checkwin(row: number, col: number){
   count = count >= 4 ? count : verticalCheck(row, col)
   count = count >= 4 ? count : diagCheck(row, col)
 
+  console.log("win count:", count);
+   
   if(count >= 4) {
       setGameState((prev) => {
           if(prev != undefined){

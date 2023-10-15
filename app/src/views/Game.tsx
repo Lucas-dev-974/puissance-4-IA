@@ -1,7 +1,7 @@
 import { DefaultEventsMap } from "@socket.io/component-emitter";
 import { Socket, io } from "socket.io-client";
 
-import { Show, createSignal, onCleanup, onMount } from "solid-js";
+import { Show, createEffect, createSignal, onCleanup, onMount } from "solid-js";
 import GameBoard, { gameState } from "../components/GameView/GameBoard";
 import { getAvailableRoom, intialiseWebSocket, leaveRoomAndDisconnect } from "../services/web-socket.service";
 import { GameModes, PlayersType, gameMode, playerInformations } from "./Home";
@@ -27,19 +27,24 @@ export interface Room {
 
 
 export default function(){
+    createEffect(() => {
+        console.log("room", gameState());
+    })
     onMount(() => {
         if(gameMode() == GameModes.vsPayer) socket.emit('join-room')
         window.addEventListener('beforeunload', () => leaveRoomAndDisconnect(socket));
+        
+        
     })
 
     onCleanup(() => leaveRoomAndDisconnect(socket))
 
     return <section>
-        <p>Vous ête le {playerInformations()?.name}</p>
+        <p>Vous ête le joueur {playerInformations()?.name}</p>
         <Show when={gameState().winner != PlayersType.ofPlayer}>
-            <p>Le gagnant est {gameState().winner.toString()} </p>
+            <p>Le gagnant est le joueur 2 {gameState().winner.toString()} </p>
         </Show>
-        <p>Tour de: {gameState().turn}</p>
+        <p>Tour du joueur {gameState().turn}</p>
         <GameBoard />
         <button onClick={() => getAvailableRoom(socket)}>log room</button>
     </section>

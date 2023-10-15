@@ -2,7 +2,7 @@ import { For, createSignal } from "solid-js";
 import { socket } from "../../views/Game";
 import { PlayersType, playerInformations } from "../../views/Home";
 import "./GameBoard.css";
-import { checkwin, rowsCount, updateGrid } from "./game.utils";
+import { checkwin, rowsCount, turnOf, updateGrid } from "./game.utils";
 
 export type GridType = { [key: number]: string[] }
 
@@ -28,7 +28,6 @@ function InitialiseGameState(): GameState{
         const playerOf = PlayersType.ofPlayer.toString()
         initialGrid[row] = [playerOf,playerOf,playerOf,playerOf,playerOf,playerOf]
     }
-    
 
     const initalGameState = {
         grid: initialGrid,
@@ -55,6 +54,9 @@ export function placeDisc(col: number, byPassTurnOf = false, emit = true){
         const position = gameState().grid[row][col]
         if(!posed && position == "0") {
             updateGrid(row, col)
+            
+            turnOf()
+
             checkwin(row, col)
             posed = true   
         }
@@ -95,7 +97,7 @@ export default function (){
                         {(square, index) => <div class="square" classList={{
                             "red-square": square == PlayersType.player1.toString(),
                             "blue-square": square == PlayersType.player2.toString() 
-                        }} onClick={() => placeDisc(index())} >{ square }</div>}
+                        }} onClick={() => placeDisc(index())} ></div>}
                     </For>
                 </div>
             }</For>

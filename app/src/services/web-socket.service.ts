@@ -10,7 +10,6 @@ export function intialiseWebSocket(socket: Socket<DefaultEventsMap, DefaultEvent
     })
 
     socket.on('playerJoinedRoom', (data: {room: Room, player: Player}) => {
-        console.log("joined room", data.room);
         setPlayerInformaitons(data.player)
         setGameState((prev) => {
             if(prev != undefined){
@@ -29,14 +28,10 @@ export function intialiseWebSocket(socket: Socket<DefaultEventsMap, DefaultEvent
     
     socket.on('player-left', () => {
         alert("player as leaved the game")
-        console.log("player as leaved the game");
     })
     
     
     socket.on('played', (data:{ col?: number, room: Room }) => {
-        console.log("Played grid", data.room.grid);
-        console.log("Played col", data.col);
-        
         if(data.col !=  undefined) placeDisc(data.col, true, false) 
         setGameState((prev) => {
             if(prev == undefined) return prev
@@ -49,7 +44,6 @@ export function intialiseWebSocket(socket: Socket<DefaultEventsMap, DefaultEvent
     })
     
     socket.on('exit-game', () => {
-        console.log("game exited");
         alert("désoler le joueur qui joue contre vous à quiter la partie !")
     })
 }
