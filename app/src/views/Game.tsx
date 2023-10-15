@@ -21,7 +21,8 @@ export interface Room {
     started: boolean
     turn: PlayersType;
     winner: PlayersType
-    gameBoard: { [key: number]: string[] };
+    lastPlayer: PlayersType;
+    grid: { [key: number]: string[] };
   }
 
 

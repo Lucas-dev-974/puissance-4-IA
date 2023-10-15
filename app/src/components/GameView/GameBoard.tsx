@@ -14,6 +14,7 @@ type gridType = { [key: number]: string[] }
 export type GameState = {
     grid: gridType, 
     player?: PlayersType,
+    players?: {},
     turn: PlayersType,
     winner: PlayersType,
     lastPlayer: PlayersType,
@@ -24,7 +25,7 @@ export type GameState = {
 function InitialiseGameState(): GameState{
     const initialGrid: GridType = {}
     for (let row = 0; row <= rowsCount; row++) {
-        const playerOf = PlayersType.ofPlayer
+        const playerOf = PlayersType.ofPlayer.toString()
         initialGrid[row] = [playerOf,playerOf,playerOf,playerOf,playerOf,playerOf]
     }
     
@@ -47,10 +48,7 @@ export function placeDisc(col: number, byPassTurnOf = false, emit = true){
     if(gameState().winner != PlayersType.ofPlayer) return 
 
     const canIPlay = playerInformations()?.name == gameState().turn
-    console.log("Can I play: ", canIPlay, playerInformations());
-    
-    if(!canIPlay && !byPassTurnOf) return console.log('not your tower')
-    console.log("Check Turn Passed --");
+    if(!canIPlay && byPassTurnOf == false) return alert("Ce n'est pas votre tour")
     
     for(const _row of Object.keys(gameState().grid).reverse()){
         const row = Number(_row)
@@ -58,30 +56,18 @@ export function placeDisc(col: number, byPassTurnOf = false, emit = true){
         if(!posed && position == "0") {
             updateGrid(row, col)
             checkwin(row, col)
-            setDisplayGrid(prev => {
-                if(prev == undefined) return prev
-                const grid = {...prev}
-                grid[row][col] = gameState().lastPlayer
-                return  grid
-            })
             posed = true   
         }
     }
-    if(emit) socket.emit('play', {col: col})
+    if(emit) socket.emit('play', {col: col, room: gameState()})
 }
-export const [dispalyGrid, setDisplayGrid] = createSignal<gridType>(gameState().grid)
-
 
 export default function (){ 
-
-    
     function getGridAsOneArray(){
-        const bufferGrid = []
-        
+        const bufferGrid = []        
         const rows = 7
         const cols = 6
 
-        
         for(let row = 0; row < rows; row++){
             for(let _col = 0; _col <= cols; _col++){
                 if(!bufferGrid[_col]) bufferGrid[_col] = []
@@ -97,15 +83,15 @@ export default function (){
         for(const arr of bufferGrid){
             if(arr[0] != undefined) returnArray = [...returnArray, ...arr]            
         }
-
+        
         return returnArray
     }
     
     return <>
          <div class="game-board"> 
-            <For each={Object.keys(dispalyGrid())}>{(row) =>
+            <For each={Object.keys(gameState().grid)}>{(row) =>
                 <div class="row">
-                    <For each={dispalyGrid()[Number(row)]}>
+                    <For each={gameState().grid[Number(row)]}>
                         {(square, index) => <div class="square" classList={{
                             "red-square": square == PlayersType.player1.toString(),
                             "blue-square": square == PlayersType.player2.toString() 

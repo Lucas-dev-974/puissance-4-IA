@@ -16,6 +16,11 @@ export function intialiseWebSocket(socket: Socket<DefaultEventsMap, DefaultEvent
             if(prev != undefined){
                 const state = {...prev}
                 state.player = data.player.name
+                state.turn = data.room.turn
+                state.lastPlayer = data.room.lastPlayer
+                state.started = data.room.started
+                state.winner = data.room.winner
+                state.grid = data.room.grid
                 return state
             }
             return prev
@@ -28,8 +33,19 @@ export function intialiseWebSocket(socket: Socket<DefaultEventsMap, DefaultEvent
     })
     
     
-    socket.on('played', (data:{col?: {col: number}, room: Room}) => {
-        if(data.col) placeDisc(data.col.col, true, false)
+    socket.on('played', (data:{ col?: number, room: Room }) => {
+        console.log("Played grid", data.room.grid);
+        console.log("Played col", data.col);
+        
+        if(data.col !=  undefined) placeDisc(data.col, true, false) 
+        setGameState((prev) => {
+            if(prev == undefined) return prev
+            const state = {...prev}
+            state.turn = data.room.turn
+            state.lastPlayer = data.room.lastPlayer
+            state.winner = data.room.winner
+            return state
+        })
     })
     
     socket.on('exit-game', () => {

@@ -1,5 +1,5 @@
 import { PlayersType } from "../../views/Home";
-import { gameState, setDisplayGrid, setGameState } from "./GameBoard";
+import { gameState, setGameState } from "./GameBoard";
 
 export const rowsCount = 6;
 
@@ -25,12 +25,9 @@ function turnOf(){
 function updateGrid(row: number, col: number){
   setGameState(prev => {
     if(prev == undefined) return prev 
-    prev.grid[row][col] = turnOf()
-    return prev
-  })
-  setDisplayGrid(prev => {
-    if(prev == undefined) return prev
-    return gameState().grid
+    const state = {...prev}
+    state.grid[row][col] = turnOf()
+    return state
   })
 }
 
@@ -66,13 +63,12 @@ function verticalCheck(row: number, col: number){
 
 function runVertical(row: number, col: number, count: number){
   let bufferRow: number = row
-  
   if(gameState().grid[bufferRow] == undefined)
     return 0
   
-  
   while(gameState().grid[bufferRow] && gameState().grid[bufferRow][col] == gameState().lastPlayer.toString()){
     if(count >= 4) break
+    console.log("VERTICAL CHECK:",  gameState().grid[bufferRow][col] == gameState().lastPlayer.toString());
     count += 1
     bufferRow +=  1
   }
@@ -132,8 +128,7 @@ export function checkwin(row: number, col: number){
   
   count = count >= 4 ? count : verticalCheck(row, col)
   count = count >= 4 ? count : diagCheck(row, col)
-  console.log("checkwin count:", count, gameState().grid);
-  
+
   if(count >= 4) {
       setGameState((prev) => {
           if(prev != undefined){
@@ -143,9 +138,7 @@ export function checkwin(row: number, col: number){
           }
           return prev
       })
-      console.log("gameState Winner:", gameState());
-      
-      return console.log("win of ", gameState().lastPlayer);
+      return alert("win of player " + gameState().lastPlayer.toString());
   }
 }
 export { diagCheck, horizontalCheck, runLeftRight, turnOf, updateGrid, verticalCheck };

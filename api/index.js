@@ -29,48 +29,7 @@ var PlayersType;
     PlayersType["player2"] = "2";
     PlayersType["ofPlayer"] = "0";
 })(PlayersType || (exports.PlayersType = PlayersType = {}));
-const rooms = {}; // Un objet pour stocker les salles
-// Cette fonction renvoie la liste des salles disponibles
-function getAvailableRooms() {
-    let availableRooms;
-    for (const roomName in rooms) {
-        const room = rooms[roomName];
-        if (room.players.length < 2) {
-            availableRooms = room;
-            break;
-        }
-    }
-    return availableRooms;
-}
-;
-// Créez une fonction pour gérer la création et la gestion des salles
-const createRoom = () => {
-    const roomName = `Room-${Object.keys(rooms).length + 1}`;
-    rooms[roomName] = {
-        name: roomName,
-        players: [],
-        grid: Array(6).fill(Array(7).fill(0)),
-        turn: PlayersType.player1,
-        lastPlayer: PlayersType.player1
-    };
-    return rooms[roomName];
-};
 io.on("connection", (socket) => {
-    let currentRoom = null;
-    function getPlayerBySocketID(id) {
-        let player;
-        for (const roomIndex in rooms) {
-            const room = rooms[roomIndex];
-            if (player != undefined)
-                break;
-            room.players.forEach((_player) => {
-                if (_player.id == id) {
-                    player = _player;
-                }
-            });
-        }
-        return player;
-    }
     // Will create room or append player to existing room
     socket.on('join-room', () => {
         let room = roomManager_1.default.getAvailableRoom(socket);
@@ -84,7 +43,7 @@ io.on("connection", (socket) => {
         socket.emit('playerJoinedRoom', { room: roomManager_1.default.formatRoom(room), player });
         socket.to(room.name).emit("notification", "le " + player.name + " à rejoin le jeux");
     });
-    socket.on('play', (col) => {
+    socket.on('play', (data) => {
         let room = {};
         for (const roomName in roomManager_1.default.getRooms()) {
             if (roomManager_1.default.getRooms()[roomName]) {
@@ -95,7 +54,6 @@ io.on("connection", (socket) => {
                 });
             }
         }
-        console.log("ROOM:", room);
         let player = room.players.find(item => item.id == socket.id);
         // * Check if room is not started if it is so start it  
         if (!room.started)
@@ -105,14 +63,15 @@ io.on("connection", (socket) => {
             room.turn = PlayersType.player2;
         else if (room.turn == PlayersType.player2 && (player === null || player === void 0 ? void 0 : player.name) == PlayersType.player2)
             room.turn = PlayersType.player1;
-        // * set grid  of room
-        console.log("ROOM AFTER TURNOF UPDATE", col);
+        room.grid = data.room.grid;
+        // * update room
+        room.winner = data.room.winner;
         roomManager_1.default.updateRoom(room);
         // * Emit event played to players
-        socket.to(room.name).emit('played', { col: col, room: roomManager_1.default.formatRoom(room) });
+        socket.to(room.name).emit('played', { col: data.col, room: roomManager_1.default.formatRoom(room) });
         socket.emit('played', { room: roomManager_1.default.formatRoom(room) });
     });
-    socket.on('logRooms', () => socket.emit('logRooms', rooms));
+    socket.on('logRooms', () => socket.emit('logRooms', roomManager_1.default.getRoom(Array.from(socket.rooms)[1])));
     // Gestion de l'événement 'leaveRoom' pour quitter la salle
     socket.on('leave-room', () => {
         const roomName = Array.from(socket.rooms)[1];
@@ -122,23 +81,6 @@ io.on("connection", (socket) => {
             if (deleted == "deleted")
                 return;
             socket.leave(roomName);
-        }
-    });
-    // Logique du jeu Puissance 4
-    socket.on('disconnect', () => {
-        if (currentRoom && rooms[currentRoom]) {
-            // Retirez le joueur de la salle lorsqu'il se déconnecte
-            const room = rooms[currentRoom];
-            const player = getPlayerBySocketID(String(socket.id));
-            const playerIndex = room.players.indexOf(player);
-            if (playerIndex !== -1) {
-                room.players.splice(playerIndex, 1);
-                io.to(currentRoom).emit('playerLeft');
-                if (room.players.length === 0) {
-                    // Supprimez la salle si elle est vide
-                    delete rooms[currentRoom];
-                }
-            }
         }
     });
 });
