@@ -43,8 +43,6 @@ export default function () {
         socket()?.emit("join-room")
         break
     }
-
-    if (gameMode() == GameModes.vsPayer) socket()?.emit("join-room")
     window.addEventListener("beforeunload", () => leaveRoomAndDisconnect())
   })
 
