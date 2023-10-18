@@ -1,5 +1,5 @@
 .btn{
-    @apply text-white px-5 py-3 w-full hover:shadow-xl   rounded-md;
+    @apply text-white px-5 py-3 w-full hover:shadow-xl rounded-md;
 }
 
 .btn-blue{

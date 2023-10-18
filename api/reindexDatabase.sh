@@ -1,0 +1,10 @@
+#!/bin/bash
+DB_LIST=$(psql -Atc "SELECT datname FROM pg_database where datallowconn = true;")
+for db in $DB_LIST; do
+    echo "Reindexing $db"
+    /usr/bin/psql -q -f - $db << _EOF
+REINDEX DATABASE $db;
+REINDEX SYSTEM $db;
+ALTER DATABASE $db REFRESH COLLATION VERSION;
+_EOF
+done

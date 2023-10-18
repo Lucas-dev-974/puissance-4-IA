@@ -23,3 +23,8 @@ code {
 .container{
   @apply w-[95%] sm:w-[75%] md:w-[65%] lg:w-[40%] mx-auto;
 }
+
+.game-content{
+  @apply mx-auto;
+  width: 60vh;
+}

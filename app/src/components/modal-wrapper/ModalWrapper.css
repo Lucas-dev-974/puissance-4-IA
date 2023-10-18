@@ -1,0 +1,12 @@
+.modal-layout {
+  @apply absolute left-0 top-0 w-[100vw] h-[100vh] flex items-center justify-center;
+  display: none;
+}
+
+.modal-layout.show {
+  display: flex;
+}
+
+.modal-content {
+  @apply bg-gray-400 px-10 py-6 rounded;
+}

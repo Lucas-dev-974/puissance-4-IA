@@ -1,7 +1,7 @@
 /* Style du plateau de jeu */
 .game-board {
   @apply p-1 bg-blue-800 mx-auto w-full flex flex-col items-center rounded-md;
-  width: 60vh;
+  /* width: 60vh; */
   height: 50vh;
 }
 
