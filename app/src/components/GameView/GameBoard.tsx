@@ -10,6 +10,9 @@ import {
 import "./GameBoard.css"
 import { checkwin, rowsCount, turnOf, updateGrid } from "./game.utils"
 
+import * as synaptic from "synaptic"
+import modele from "../../models/ia-normal.json"
+
 export type GridType = { [key: number]: string[] }
 
 export type Token = {
@@ -52,6 +55,9 @@ export function InitialiseGameState(): GameState {
 export const [gameState, setGameState] = createSignal<GameState>(
   InitialiseGameState()
 )
+
+let robot = synaptic.Network.fromJSON(modele)
+// console.log(robot)
 
 /**
  *
