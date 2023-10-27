@@ -53,7 +53,22 @@ export const [gameState, setGameState] = createSignal<GameState>(
   InitialiseGameState()
 )
 
-export function placeDisc(col: number, byPassTurnOf = false, emit = true) {
+/**
+ *
+ * @example
+ * // returns 0 ou 1 ou 2 ou 3 ou 4 ou 5
+ * entierAleatoire(0, 5);
+ */
+function entierAleatoire(minimum: number, maximum: number) {
+  return Math.floor(Math.random() * (maximum - minimum + 1)) + minimum
+}
+
+export function placeDisc(
+  col: number,
+  byPassTurnOf = false,
+  emit = true,
+  humainJoue = true
+) {
   let posed = false
   if (gameState().winner != PlayersType.ofPlayer) return
 
@@ -77,6 +92,16 @@ export function placeDisc(col: number, byPassTurnOf = false, emit = true) {
 
   if (emit && gameMode() != GameModes.local)
     socket()?.emit("play", { col: col, room: gameState() })
+
+  // le joueur joue une partie contre l'IA && le joueur vient de placer un jeton,...
+  if (gameMode() == GameModes.vsIA && humainJoue == true) {
+    // l'index de la colonne à jouer est choisi de manière aléatoire dans un premier temps
+    // cet index sera par la suite calculé au travers du modèle
+    let indexColonne = entierAleatoire(0, 5)
+
+    // ...c'est donc au tour de l'IA de jouer
+    placeDisc(indexColonne, false, true, false)
+  }
 }
 
 export default function () {
@@ -105,7 +130,7 @@ export default function () {
   }
 
   onMount(() => {
-    if (gameMode() == GameModes.local)
+    if (gameMode() == GameModes.local || gameMode() == GameModes.vsIA)
       setPlayerInformaitons({
         id: PlayersType.player1,
         name: PlayersType.player1,

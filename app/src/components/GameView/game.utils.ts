@@ -22,7 +22,7 @@ export function updateTurnOf(turn: PlayersType) {
 }
 
 function TurnPlayerInformations(playerType: PlayersType) {
-  if (gameMode() == GameModes.local) {
+  if (gameMode() == GameModes.local || gameMode() == GameModes.vsIA) {
     setPlayerInformaitons((prev) => {
       if (prev == undefined) return prev
       const informations = { ...prev }
