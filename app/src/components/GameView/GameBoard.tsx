@@ -1,5 +1,5 @@
 import { For, createSignal, onMount } from "solid-js"
-import { socket } from "../../views/Game"
+import Game, { socket } from "../../views/Game"
 import {
   GameModes,
   PlayersType,
@@ -69,6 +69,36 @@ function entierAleatoire(minimum: number, maximum: number) {
   return Math.floor(Math.random() * (maximum - minimum + 1)) + minimum
 }
 
+function grille(grid: any) {
+  let grille = []
+
+  for (const indexLigne in grid) {
+    let ligne = grid[indexLigne].map((element: string) => {
+      return parseInt(element)
+    })
+    grille.push(ligne)
+  }
+
+  return grille
+}
+
+function get1DArrayFormatted(
+  playerId: number,
+  grille: Array<Array<number>>
+): Array<number> {
+  return grille.reduce(
+    (array, line) =>
+      array.concat(
+        line.map((cellValue) => {
+          if (cellValue === 0) return 0
+          else if (cellValue === playerId) return 1
+          else return -1
+        })
+      ),
+    []
+  )
+}
+
 export function placeDisc(
   col: number,
   byPassTurnOf = false,
@@ -101,9 +131,11 @@ export function placeDisc(
 
   // le joueur joue une partie contre l'IA && le joueur vient de placer un jeton,...
   if (gameMode() == GameModes.vsIA && humainJoue == true) {
-    // l'index de la colonne à jouer est choisi de manière aléatoire dans un premier temps
-    // cet index sera par la suite calculé au travers du modèle
-    let indexColonne = entierAleatoire(0, 5)
+    let output = robot.activate(
+      get1DArrayFormatted(2, grille(gameState().grid))
+    )
+
+    let indexColonne = output.indexOf(Math.max(...output))
 
     // ...c'est donc au tour de l'IA de jouer
     placeDisc(indexColonne, false, true, false)
