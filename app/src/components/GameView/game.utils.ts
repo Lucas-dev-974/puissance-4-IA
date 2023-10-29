@@ -180,6 +180,12 @@ export function checkwin(row: number, col: number) {
       }
       return prev
     })
-    return alert("win of player " + gameState().lastPlayer.toString())
+    if (gameMode() === GameModes.vsIA) {
+      return alert("L'IA à gagné")
+    } else {
+      return alert(
+        "Le joueur " + gameState().lastPlayer.toString() + " à gagné"
+      )
+    }
   }
 }
