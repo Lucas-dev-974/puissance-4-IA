@@ -22,7 +22,7 @@ export function updateTurnOf(turn: PlayersType) {
 }
 
 function TurnPlayerInformations(playerType: PlayersType) {
-  if (gameMode() == GameModes.local) {
+  if (gameMode() == GameModes.local || gameMode() == GameModes.vsIA) {
     setPlayerInformaitons((prev) => {
       if (prev == undefined) return prev
       const informations = { ...prev }
@@ -171,6 +171,7 @@ export function checkwin(row: number, col: number) {
 
   console.log("win count:", count)
 
+  console.log("last player:", gameState().lastPlayer)
   if (count >= 4) {
     setGameState((prev) => {
       if (prev != undefined) {
@@ -180,6 +181,15 @@ export function checkwin(row: number, col: number) {
       }
       return prev
     })
-    return alert("win of player " + gameState().lastPlayer.toString())
+
+    if (gameMode() === GameModes.vsIA) {
+      if (gameState().lastPlayer == PlayersType.player1)
+        return alert("Vous avez  gagné")
+      else return alert("L'IA à gagné")
+    } else {
+      return alert(
+        "Le joueur " + gameState().lastPlayer.toString() + " à gagné"
+      )
+    }
   }
 }

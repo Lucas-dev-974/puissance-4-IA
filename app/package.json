@@ -21,7 +21,9 @@
     "vite-plugin-solid": "^2.7.0"
   },
   "dependencies": {
+    "@types/synaptic": "^1.0.6",
     "socket.io-client": "^4.7.2",
-    "solid-js": "^1.7.6"
+    "solid-js": "^1.7.6",
+    "synaptic": "^1.1.4"
   }
 }
