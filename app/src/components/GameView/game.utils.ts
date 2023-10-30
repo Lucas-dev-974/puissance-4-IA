@@ -171,6 +171,7 @@ export function checkwin(row: number, col: number) {
 
   console.log("win count:", count)
 
+  console.log("last player:", gameState().lastPlayer)
   if (count >= 4) {
     setGameState((prev) => {
       if (prev != undefined) {
@@ -180,8 +181,11 @@ export function checkwin(row: number, col: number) {
       }
       return prev
     })
+
     if (gameMode() === GameModes.vsIA) {
-      return alert("L'IA à gagné")
+      if (gameState().lastPlayer == PlayersType.player1)
+        return alert("Vous avez  gagné")
+      else return alert("L'IA à gagné")
     } else {
       return alert(
         "Le joueur " + gameState().lastPlayer.toString() + " à gagné"
